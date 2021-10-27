@@ -74,7 +74,7 @@ trait RedisCommand extends Redis
   val database: Int = 0
   val secret: Option[Any] = None
 
-  override def onConnect: Unit = {
+  override def onConnect(): Unit = {
     secret.foreach {s =>
       auth(s)
     }
@@ -207,7 +207,7 @@ class RedisClient(override val host: String, override val port: Int,
     override def connected = parent.connected
     override def connect = parent.connect
     override def disconnect = parent.disconnect
-    override def clearFd = parent.clearFd
+    override def clearFd() = parent.clearFd()
     override def write(data: Array[Byte]) = parent.write(data)
     override def readLine = parent.readLine
     override def readCounted(count: Int) = parent.readCounted(count)
