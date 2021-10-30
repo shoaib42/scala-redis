@@ -172,4 +172,50 @@ class PipelineSpec extends AnyFunSpec
       res.get.size should equal(4)
     }
   }
+
+  describe("pipeline with batch submission with custom serialization - 1") {
+    it("should execute all commands in batch") {
+      val client = new RedisClient(redisContainerHost, redisContainerPort, batch = RedisClient.BATCH)
+      import com.redis.serialization._
+      import Parse.Implicits.parseInt
+      implicit val parseString = Parse[String](new String(_).toInt.toBinaryString)
+      val res = client.batchedPipeline(
+        List(
+          () => client.hmset("hash", Map("field1" -> "1", "field2" -> 2)),
+          () => client.hmget[String,Int]("hash", "field1", "field2"),
+          () => client.hmget[String,String]("hash", "field1", "field2")
+        )
+      )
+      println(res)
+      val l = res.get
+      l(1) match {
+        case m: Option[Map[String, Any]] => m.get.get("field2").get should equal(2)
+        case _ => ???
+      }
+      l(2) match {
+        case m: Option[Map[String, Any]] => m.get.get("field2").get should equal("10")
+        case _ => ???
+      }
+      res.get.size should equal(3)
+    }
+  }
+
+  describe("pipeline with batch submission with custom serialization - 2") {
+    it("should execute all commands in batch") {
+      val client = new RedisClient(redisContainerHost, redisContainerPort, batch = RedisClient.BATCH)
+      case class Upper(s: String)
+      import com.redis.serialization.Format
+      val formatUpper = Format{case Upper(s) => s.toUpperCase}
+      val res = client.batchedPipeline(
+        List(
+          () => client.hmset("hash1", Map("field1" -> Upper("val1"), "field2" -> Upper("val2"))),
+          () => client.hmset("hash2", Map("field1" -> Upper("val1"), "field2" -> Upper("val2")))(formatUpper),
+          () => client.hmget("hash1", "field1", "field2"), 
+          () => client.hmget("hash2", "field1", "field2") 
+        )
+      )
+      println(res)
+      res.get.size should equal(4)
+    }
+  }
 }
