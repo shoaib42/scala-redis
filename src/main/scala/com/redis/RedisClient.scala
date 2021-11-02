@@ -74,6 +74,7 @@ abstract class Redis(batch: Mode) extends IO with Protocol {
       else throw e
   }
 
+  /*
   def send[A](commands: List[CommandToSend])(result: => A): A = try {
     val buffer = new collection.mutable.ArrayBuilder.ofByte
     val space = " ".getBytes("UTF-8")
@@ -87,6 +88,22 @@ abstract class Redis(batch: Mode) extends IO with Protocol {
       buffer ++= Commands.LS
     }
     write(buffer.result())
+    result
+  } catch {
+    case e: RedisConnectionException =>
+      if (disconnect) send(commands)(result)
+      else throw e
+    case e: SocketException =>
+      if (disconnect) send(commands)(result)
+      else throw e
+  }
+  */
+
+  def send[A](commands: List[CommandToSend])(result: => A): A = try {
+    val cs = commands.map { command =>
+      command.command.getBytes("UTF-8") +: command.args
+    }
+    write(Commands.multiMultiBulk(cs))
     result
   } catch {
     case e: RedisConnectionException =>

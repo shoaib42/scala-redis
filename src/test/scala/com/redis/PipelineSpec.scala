@@ -218,4 +218,23 @@ class PipelineSpec extends AnyFunSpec
       res.get.size should equal(4)
     }
   }
+
+  describe("pipeline with batch submission with custom serialization - 3") {
+    it("should execute all commands in batch") {
+      val client = new RedisClient(redisContainerHost, redisContainerPort, batch = RedisClient.BATCH)
+      case class Upper(s: String)
+      import com.redis.serialization.Format
+      val formatUpper = Format{case Upper(s) => s.toUpperCase}
+      val res = client.batchedPipeline(
+        List(
+          () => client.hmset("hash1", Map("field1" -> Upper("va'l1"), "field2" -> Upper("val2"))),
+          () => client.hmset("hash2", Map("field1" -> Upper(s"""val"1"""), "field2" -> Upper("val2")))(formatUpper),
+          () => client.hmget("hash1", "field1", "field2"), 
+          () => client.hmget("hash2", "field1", "field2") 
+        )
+      )
+      println(res)
+      res.get.size should equal(4)
+    }
+  }
 }
