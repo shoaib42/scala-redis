@@ -33,10 +33,7 @@ object RedisClient {
 import RedisClient._
 abstract class Redis(batch: Mode) extends IO with Protocol {
   var handlers: Vector[(String, () => Any)] = Vector.empty
-  // var commandBuffer: StringBuffer           = new StringBuffer
   val commandBuffer = collection.mutable.ListBuffer.empty[CommandToSend]
-  val crlf = "\r\n"
-
 
   def send[A](command: String, args: Seq[Any])(result: => A)(implicit format: Format): A = try {
     if (batch == BATCH) {
@@ -73,31 +70,6 @@ abstract class Redis(batch: Mode) extends IO with Protocol {
       if (disconnect) send(command)(result)
       else throw e
   }
-
-  /*
-  def send[A](commands: List[CommandToSend])(result: => A): A = try {
-    val buffer = new collection.mutable.ArrayBuilder.ofByte
-    val space = " ".getBytes("UTF-8")
-    commands.foreach { command =>
-      buffer ++= command.command.getBytes("UTF-8")
-      buffer ++= space
-      command.args.foreach { arg =>
-        buffer ++= arg
-        buffer ++= space
-      }
-      buffer ++= Commands.LS
-    }
-    write(buffer.result())
-    result
-  } catch {
-    case e: RedisConnectionException =>
-      if (disconnect) send(commands)(result)
-      else throw e
-    case e: SocketException =>
-      if (disconnect) send(commands)(result)
-      else throw e
-  }
-  */
 
   def send[A](commands: List[CommandToSend])(result: => A): A = try {
     val cs = commands.map { command =>
