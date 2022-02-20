@@ -75,6 +75,22 @@ trait ListApi {
 
   def brpoplpush[A](srcKey: Any, dstKey: Any, timeoutInSeconds: Int)(implicit format: Format, parse: Parse[A]): Option[A]
 
+  def lmovell[A](srcKey: Any, dstKey: Any)(implicit format: Format, parse: Parse[A]): Option[A]
+
+  def blmovell[A](srcKey: Any, dstKey: Any, timeoutInSeconds: Int)(implicit format: Format, parse: Parse[A]): Option[A]
+
+  def lmovelr[A](srcKey: Any, dstKey: Any)(implicit format: Format, parse: Parse[A]): Option[A]
+
+  def blmovelr[A](srcKey: Any, dstKey: Any, timeoutInSeconds: Int)(implicit format: Format, parse: Parse[A]): Option[A]
+
+  def lmoverl[A](srcKey: Any, dstKey: Any)(implicit format: Format, parse: Parse[A]): Option[A]
+
+  def blmoverl[A](srcKey: Any, dstKey: Any, timeoutInSeconds: Int)(implicit format: Format, parse: Parse[A]): Option[A]
+
+  def lmoverr[A](srcKey: Any, dstKey: Any)(implicit format: Format, parse: Parse[A]): Option[A]
+
+  def blmoverr[A](srcKey: Any, dstKey: Any, timeoutInSeconds: Int)(implicit format: Format, parse: Parse[A]): Option[A]
+
   def blpop[K, V](timeoutInSeconds: Int, key: K, keys: K*)(implicit format: Format, parseK: Parse[K], parseV: Parse[V]): Option[(K, V)]
 
   def brpop[K, V](timeoutInSeconds: Int, key: K, keys: K*)(implicit format: Format, parseK: Parse[K], parseV: Parse[V]): Option[(K, V)]

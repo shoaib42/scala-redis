@@ -103,11 +103,17 @@ import org.scalatest.matchers.should.Matchers
       r.lpush("java-virtual-machine-{langs}", "jruby") should equal(Some(2))
       r.lpush("java-virtual-machine-{langs}", "groovy") should equal(Some(3))
       r.lpush("java-virtual-machine-{langs}", "scala") should equal(Some(4))
-      r.llen("java-virtual-machine-{langs}") should equal(Some(4))
+      r.lpush("java-virtual-machine-{langs}", "kotlin") should equal(Some(5))
+      r.lpush("java-virtual-machine-{langs}", "clojure") should equal(Some(6))
+      r.llen("java-virtual-machine-{langs}") should equal(Some(6))
       r.lpush("microsoft-platform-{langs}", "c++") should equal(Some(1))
       r.rpoplpush("java-virtual-machine-{langs}", "microsoft-platform-{langs}").get should equal("java")
-      r.llen("java-virtual-machine-{langs}") should equal(Some(3))
-      r.llen("microsoft-platform-{langs}") should equal(Some(2))
+      r.lmovell("java-virtual-machine-{langs}", "microsoft-platform-{langs}").get should equal("clojure")
+      r.lmovelr("java-virtual-machine-{langs}", "microsoft-platform-{langs}").get should equal("kotlin")
+      r.lmoverl("java-virtual-machine-{langs}", "microsoft-platform-{langs}").get should equal("jruby")
+      r.lmoverr("java-virtual-machine-{langs}", "microsoft-platform-{langs}").get should equal("groovy")
+      r.llen("java-virtual-machine-{langs}") should equal(Some(1))
+      r.llen("microsoft-platform-{langs}") should equal(Some(6))
     }
   }
 

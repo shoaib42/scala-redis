@@ -48,6 +48,30 @@ trait ListOperations extends ListApi {
   override def brpoplpush[A](srcKey: Any, dstKey: Any, timeoutInSeconds: Int)(implicit format: Format, parse: Parse[A]): Option[A] =
     send("BRPOPLPUSH", List(srcKey, dstKey, timeoutInSeconds))(asBulkWithTime)
 
+  override def lmovell[A](srcKey: Any, dstKey: Any)(implicit format: Format, parse: Parse[A]): Option[A] =
+    send("LMOVE", List(srcKey, dstKey, "LEFT", "LEFT"))(asBulk)
+
+  override def blmovell[A](srcKey: Any, dstKey: Any, timeoutInSeconds: Int)(implicit format: Format, parse: Parse[A]): Option[A] =
+    send("BLMOVE", List(srcKey, dstKey, "LEFT", "LEFT", timeoutInSeconds))(asBulkWithTime)
+
+  override def lmovelr[A](srcKey: Any, dstKey: Any)(implicit format: Format, parse: Parse[A]): Option[A] =
+    send("LMOVE", List(srcKey, dstKey, "LEFT", "RIGHT"))(asBulk)
+
+  override def blmovelr[A](srcKey: Any, dstKey: Any, timeoutInSeconds: Int)(implicit format: Format, parse: Parse[A]): Option[A] =
+    send("BLMOVE", List(srcKey, dstKey, "LEFT", "RIGHT", timeoutInSeconds))(asBulkWithTime)
+
+  override def lmoverl[A](srcKey: Any, dstKey: Any)(implicit format: Format, parse: Parse[A]): Option[A] =
+    send("LMOVE", List(srcKey, dstKey, "RIGHT", "LEFT"))(asBulk)
+
+  override def blmoverl[A](srcKey: Any, dstKey: Any, timeoutInSeconds: Int)(implicit format: Format, parse: Parse[A]): Option[A] =
+    send("BLMOVE", List(srcKey, dstKey, "RIGHT", "LEFT", timeoutInSeconds))(asBulkWithTime)
+
+  override def lmoverr[A](srcKey: Any, dstKey: Any)(implicit format: Format, parse: Parse[A]): Option[A] =
+    send("LMOVE", List(srcKey, dstKey, "RIGHT", "RIGHT"))(asBulk)
+
+  override def blmoverr[A](srcKey: Any, dstKey: Any, timeoutInSeconds: Int)(implicit format: Format, parse: Parse[A]): Option[A] =
+    send("BLMOVE", List(srcKey, dstKey, "RIGHT", "RIGHT", timeoutInSeconds))(asBulkWithTime)
+
   override def blpop[K, V](timeoutInSeconds: Int, key: K, keys: K*)(implicit format: Format, parseK: Parse[K], parseV: Parse[V]): Option[(K, V)] =
     send("BLPOP", key :: keys.foldRight(List[Any](timeoutInSeconds))(_ :: _))(asListPairs[K, V].flatMap(_.flatten.headOption))
 

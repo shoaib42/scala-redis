@@ -35,6 +35,22 @@ trait ClusterIncompatibleTests
 
   override protected def rpoplpush(): Unit = ()
 
+  override protected def lmovell(): Unit = ()
+
+  override protected def blmovell(): Unit = ()
+
+  override protected def lmovelr(): Unit = ()
+
+  override protected def blmovelr(): Unit = ()
+
+  override protected def lmoverl(): Unit = ()
+
+  override protected def blmoverl(): Unit = ()
+
+  override protected def lmoverr(): Unit = ()
+
+  override protected def blmoverr(): Unit = ()
+
   override protected def sinterEmpty(): Unit = ()
 
   override protected def sinterstore(): Unit = ()

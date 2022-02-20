@@ -18,9 +18,17 @@ trait ListApiSpec extends AnyFunSpec with ScalaFutures
   override protected def r: BaseApi with StringApi with ListApi with AutoCloseable
 
   blpop()
+  blmovell()
+  blmovelr()
+  blmoverl()
+  blmoverr()
   brpoplpush()
   lindex()
   llen()
+  lmovell()
+  lmovelr()
+  lmoverl()
+  lmoverr()
   lpop()
   lpush()
   lpushWithArrayBytes()
@@ -317,6 +325,143 @@ trait ListApiSpec extends AnyFunSpec with ScalaFutures
   }
   }
 
+  protected def lmovell(): Unit = {
+    describe("lmovell") {
+      it("should do") {
+        r.rpush("list-1", "a") should equal(Some(1))
+        r.rpush("list-1", "b") should equal(Some(2))
+        r.rpush("list-1", "c") should equal(Some(3))
+
+        r.rpush("list-2", "foo") should equal(Some(1))
+        r.rpush("list-2", "bar") should equal(Some(2))
+        r.lmovell("list-1", "list-2") should equal(Some("a"))
+        r.lindex("list-2", 0) should equal(Some("a"))
+        r.llen("list-1") should equal(Some(2))
+        r.llen("list-2") should equal(Some(3))
+      }
+
+      it("should keep the list same when src and dest are the same") {
+        r.rpush("list-1", "a") should equal(Some(1))
+        r.rpush("list-1", "b") should equal(Some(2))
+        r.rpush("list-1", "c") should equal(Some(3))
+        r.lmovell("list-1", "list-1") should equal(Some("a"))
+        r.lindex("list-1", 0) should equal(Some("a"))
+        r.lindex("list-1", 2) should equal(Some("c"))
+        r.llen("list-1") should equal(Some(3))
+      }
+
+      it("should time out and give None for non-existent key") {
+        r.lmovell("test-1", "test-2") should equal(None)
+        r.rpush("test-1", "a") should equal(Some(1))
+        r.rpush("test-1", "b") should equal(Some(2))
+        r.lmovell("test-1", "test-2") should equal(Some("a"))
+      }
+    }
+  }
+
+  protected def lmovelr(): Unit = {
+    describe("blmovelr") {
+      it("should do") {
+        r.rpush("list-1", "a") should equal(Some(1))
+        r.rpush("list-1", "b") should equal(Some(2))
+        r.rpush("list-1", "c") should equal(Some(3))
+
+        r.rpush("list-2", "foo") should equal(Some(1))
+        r.rpush("list-2", "bar") should equal(Some(2))
+        r.lmovelr("list-1", "list-2") should equal(Some("a"))
+        r.lindex("list-2", 2) should equal(Some("a"))
+        r.llen("list-1") should equal(Some(2))
+        r.llen("list-2") should equal(Some(3))
+      }
+
+      it("should rotate the list when src and dest are the same") {
+        r.rpush("list-1", "a") should equal(Some(1))
+        r.rpush("list-1", "b") should equal(Some(2))
+        r.rpush("list-1", "c") should equal(Some(3))
+        r.lmovelr("list-1", "list-1") should equal(Some("a"))
+        r.lindex("list-1", 0) should equal(Some("b"))
+        r.lindex("list-1", 2) should equal(Some("a"))
+        r.llen("list-1") should equal(Some(3))
+      }
+
+      it("should time out and give None for non-existent key") {
+        r.lmovelr("test-1", "test-2") should equal(None)
+        r.rpush("test-1", "a") should equal(Some(1))
+        r.rpush("test-1", "b") should equal(Some(2))
+        r.lmovelr("test-1", "test-2") should equal(Some("a"))
+      }
+    }
+  }
+
+
+  protected def lmoverl(): Unit = {
+    describe("lmoverl") {
+      it("should do") {
+        r.rpush("list-1", "a") should equal(Some(1))
+        r.rpush("list-1", "b") should equal(Some(2))
+        r.rpush("list-1", "c") should equal(Some(3))
+
+        r.rpush("list-2", "foo") should equal(Some(1))
+        r.rpush("list-2", "bar") should equal(Some(2))
+        r.lmoverl("list-1", "list-2") should equal(Some("c"))
+        r.lindex("list-2", 0) should equal(Some("c"))
+        r.llen("list-1") should equal(Some(2))
+        r.llen("list-2") should equal(Some(3))
+      }
+
+      it("should rotate the list when src and dest are the same") {
+        r.rpush("list-1", "a") should equal(Some(1))
+        r.rpush("list-1", "b") should equal(Some(2))
+        r.rpush("list-1", "c") should equal(Some(3))
+        r.lmoverl("list-1", "list-1") should equal(Some("c"))
+        r.lindex("list-1", 0) should equal(Some("c"))
+        r.lindex("list-1", 2) should equal(Some("b"))
+        r.llen("list-1") should equal(Some(3))
+      }
+
+      it("should give None for non-existent key") {
+        r.lmoverl("list-1", "list-2") should equal(None)
+        r.rpush("list-1", "a") should equal(Some(1))
+        r.rpush("list-1", "b") should equal(Some(2))
+        r.lmoverl("list-1", "list-2") should equal(Some("b"))
+      }
+    }
+  }
+
+  protected def lmoverr(): Unit = {
+    describe("lmoverr") {
+      it("should do") {
+        r.rpush("list-1", "a") should equal(Some(1))
+        r.rpush("list-1", "b") should equal(Some(2))
+        r.rpush("list-1", "c") should equal(Some(3))
+
+        r.rpush("list-2", "foo") should equal(Some(1))
+        r.rpush("list-2", "bar") should equal(Some(2))
+        r.lmoverr("list-1", "list-2") should equal(Some("c"))
+        r.lindex("list-2", 2) should equal(Some("c"))
+        r.llen("list-1") should equal(Some(2))
+        r.llen("list-2") should equal(Some(3))
+      }
+
+      it("should keep the list same when src and dest are the same") {
+        r.rpush("list-1", "a") should equal(Some(1))
+        r.rpush("list-1", "b") should equal(Some(2))
+        r.rpush("list-1", "c") should equal(Some(3))
+        r.lmoverr("list-1", "list-1") should equal(Some("c"))
+        r.lindex("list-1", 0) should equal(Some("a"))
+        r.lindex("list-1", 2) should equal(Some("c"))
+        r.llen("list-1") should equal(Some(3))
+      }
+
+      it("should give None for non-existent key") {
+        r.lmoverr("list-1", "list-2") should equal(None)
+        r.rpush("list-1", "a") should equal(Some(1))
+        r.rpush("list-1", "b") should equal(Some(2))
+        r.lmoverr("list-1", "list-2") should equal(Some("b"))
+      }
+    }
+  }
+
   protected def rpoplpush(): Unit = {
   describe("rpoplpush") {
     it("should do") {
@@ -410,6 +555,206 @@ trait ListApiSpec extends AnyFunSpec with ScalaFutures
       r1.close()
     }
   }
+  }
+
+  protected def blmovell(): Unit = {
+    describe("blmovell") {
+      it("should do") {
+        r.rpush("list-1", "a") should equal(Some(1))
+        r.rpush("list-1", "b") should equal(Some(2))
+        r.rpush("list-1", "c") should equal(Some(3))
+
+        r.rpush("list-2", "foo") should equal(Some(1))
+        r.rpush("list-2", "bar") should equal(Some(2))
+        r.blmovell("list-1", "list-2", 2) should equal(Some("a"))
+        r.lindex("list-2", 0) should equal(Some("a"))
+        r.llen("list-1") should equal(Some(2))
+        r.llen("list-2") should equal(Some(3))
+      }
+
+      it("should keep the list same when src and dest are the same") {
+        r.rpush("list-1", "a") should equal(Some(1))
+        r.rpush("list-1", "b") should equal(Some(2))
+        r.rpush("list-1", "c") should equal(Some(3))
+        r.blmovell("list-1", "list-1", 2) should equal(Some("a"))
+        r.lindex("list-1", 0) should equal(Some("a"))
+        r.lindex("list-1", 2) should equal(Some("c"))
+        r.llen("list-1") should equal(Some(3))
+      }
+
+      it("should time out and give None for non-existent key") {
+        r.blmovell("test-1", "test-2", 2) should equal(None)
+        r.rpush("test-1", "a") should equal(Some(1))
+        r.rpush("test-1", "b") should equal(Some(2))
+        r.blmovell("test-1", "test-2", 2) should equal(Some("a"))
+      }
+
+      it("should pop blockingly") {
+        val r1 = new RedisClient(redisContainerHost, redisContainerPort)
+
+        val testVal: Future[Option[String]] = Future {
+          r1.blmovell("l1", "l2", 3) should equal(Some("a"))
+          r1.lpop("l2")
+        }
+
+        r.llen("l1").get should equal(0)
+        r.lpush("l1", "a")
+
+        testVal.futureValue should equal(Some("a"))
+
+        r1.close()
+      }
+    }
+  }
+
+  protected def blmovelr(): Unit = {
+    describe("blmovelr") {
+      it("should do") {
+        r.rpush("list-1", "a") should equal(Some(1))
+        r.rpush("list-1", "b") should equal(Some(2))
+        r.rpush("list-1", "c") should equal(Some(3))
+
+        r.rpush("list-2", "foo") should equal(Some(1))
+        r.rpush("list-2", "bar") should equal(Some(2))
+        r.blmovelr("list-1", "list-2", 2) should equal(Some("a"))
+        r.lindex("list-2", 2) should equal(Some("a"))
+        r.llen("list-1") should equal(Some(2))
+        r.llen("list-2") should equal(Some(3))
+      }
+
+      it("should rotate the list when src and dest are the same") {
+        r.rpush("list-1", "a") should equal(Some(1))
+        r.rpush("list-1", "b") should equal(Some(2))
+        r.rpush("list-1", "c") should equal(Some(3))
+        r.blmovelr("list-1", "list-1", 2) should equal(Some("a"))
+        r.lindex("list-1", 0) should equal(Some("b"))
+        r.lindex("list-1", 2) should equal(Some("a"))
+        r.llen("list-1") should equal(Some(3))
+      }
+
+      it("should time out and give None for non-existent key") {
+        r.blmovelr("test-1", "test-2", 2) should equal(None)
+        r.rpush("test-1", "a") should equal(Some(1))
+        r.rpush("test-1", "b") should equal(Some(2))
+        r.blmovelr("test-1", "test-2", 2) should equal(Some("a"))
+      }
+
+      it("should pop blockingly") {
+        val r1 = new RedisClient(redisContainerHost, redisContainerPort)
+
+        val testVal: Future[Option[String]] = Future {
+          r1.blmovelr("l1", "l2", 3) should equal(Some("a"))
+          r1.lpop("l2")
+        }
+
+        r.llen("l1").get should equal(0)
+        r.lpush("l1", "a")
+
+        testVal.futureValue should equal(Some("a"))
+
+        r1.close()
+      }
+    }
+  }
+
+  protected def blmoverl(): Unit = {
+    describe("blmoverl") {
+      it("should do") {
+        r.rpush("list-1", "a") should equal(Some(1))
+        r.rpush("list-1", "b") should equal(Some(2))
+        r.rpush("list-1", "c") should equal(Some(3))
+
+        r.rpush("list-2", "foo") should equal(Some(1))
+        r.rpush("list-2", "bar") should equal(Some(2))
+        r.blmoverl("list-1", "list-2", 2) should equal(Some("c"))
+        r.lindex("list-2", 0) should equal(Some("c"))
+        r.llen("list-1") should equal(Some(2))
+        r.llen("list-2") should equal(Some(3))
+      }
+
+      it("should rotate the list when src and dest are the same") {
+        r.rpush("list-1", "a") should equal(Some(1))
+        r.rpush("list-1", "b") should equal(Some(2))
+        r.rpush("list-1", "c") should equal(Some(3))
+        r.blmoverl("list-1", "list-1", 2) should equal(Some("c"))
+        r.lindex("list-1", 0) should equal(Some("c"))
+        r.lindex("list-1", 2) should equal(Some("b"))
+        r.llen("list-1") should equal(Some(3))
+      }
+
+      it("should time out and give None for non-existent key") {
+        r.blmoverl("test-1", "test-2", 2) should equal(None)
+        r.rpush("test-1", "a") should equal(Some(1))
+        r.rpush("test-1", "b") should equal(Some(2))
+        r.blmoverl("test-1", "test-2", 2) should equal(Some("b"))
+      }
+
+      it("should pop blockingly") {
+        val r1 = new RedisClient(redisContainerHost, redisContainerPort)
+
+        val testVal: Future[Option[String]] = Future {
+          r1.blmoverl("l1", "l2", 3) should equal(Some("a"))
+          r1.lpop("l2")
+        }
+
+        r.llen("l1").get should equal(0)
+        r.lpush("l1", "a")
+
+        testVal.futureValue should equal(Some("a"))
+
+        r1.close()
+      }
+    }
+  }
+
+  protected def blmoverr(): Unit = {
+    describe("blmoverr") {
+      it("should do") {
+        r.rpush("list-1", "a") should equal(Some(1))
+        r.rpush("list-1", "b") should equal(Some(2))
+        r.rpush("list-1", "c") should equal(Some(3))
+
+        r.rpush("list-2", "foo") should equal(Some(1))
+        r.rpush("list-2", "bar") should equal(Some(2))
+        r.blmoverr("list-1", "list-2", 2) should equal(Some("c"))
+        r.lindex("list-2", 2) should equal(Some("c"))
+        r.llen("list-1") should equal(Some(2))
+        r.llen("list-2") should equal(Some(3))
+      }
+
+      it("should keep the list same when src and dest are the same") {
+        r.rpush("list-1", "a") should equal(Some(1))
+        r.rpush("list-1", "b") should equal(Some(2))
+        r.rpush("list-1", "c") should equal(Some(3))
+        r.blmoverr("list-1", "list-1", 2) should equal(Some("c"))
+        r.lindex("list-1", 0) should equal(Some("a"))
+        r.lindex("list-1", 2) should equal(Some("c"))
+        r.llen("list-1") should equal(Some(3))
+      }
+
+      it("should time out and give None for non-existent key") {
+        r.blmoverr("test-1", "test-2", 2) should equal(None)
+        r.rpush("test-1", "a") should equal(Some(1))
+        r.rpush("test-1", "b") should equal(Some(2))
+        r.blmoverr("test-1", "test-2", 2) should equal(Some("b"))
+      }
+
+      it("should pop blockingly") {
+        val r1 = new RedisClient(redisContainerHost, redisContainerPort)
+
+        val testVal: Future[Option[String]] = Future {
+          r1.blmoverr("l1", "l2", 3) should equal(Some("a"))
+          r1.lpop("l2")
+        }
+
+        r.llen("l1").get should equal(0)
+        r.lpush("l1", "a")
+
+        testVal.futureValue should equal(Some("a"))
+
+        r1.close()
+      }
+    }
   }
 
   protected def lpushWithArrayBytes(): Unit = {

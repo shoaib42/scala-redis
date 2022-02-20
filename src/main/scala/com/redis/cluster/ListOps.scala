@@ -36,6 +36,30 @@ trait ListOps extends ListApi {
   override def rpop[A](key: Any)(implicit format: Format, parse: Parse[A]): Option[A] =
     processForKey(key)(_.rpop[A](key))
 
+  override def lmovell[A](srcKey: Any, dstKey: Any)(implicit format: Format, parse: Parse[A]): Option[A] =
+    inSameNode(srcKey, dstKey) { n => n.rpoplpush[A](srcKey, dstKey) }
+
+  override def lmovelr[A](srcKey: Any, dstKey: Any)(implicit format: Format, parse: Parse[A]): Option[A] =
+    inSameNode(srcKey, dstKey) { n => n.rpoplpush[A](srcKey, dstKey) }
+
+  override def lmoverl[A](srcKey: Any, dstKey: Any)(implicit format: Format, parse: Parse[A]): Option[A] =
+    inSameNode(srcKey, dstKey) { n => n.rpoplpush[A](srcKey, dstKey) }
+
+  override def lmoverr[A](srcKey: Any, dstKey: Any)(implicit format: Format, parse: Parse[A]): Option[A] =
+    inSameNode(srcKey, dstKey) { n => n.rpoplpush[A](srcKey, dstKey) }
+
+  override def blmovell[A](srcKey: Any, dstKey: Any, timeoutInSeconds: Int)(implicit format: Format, parse: Parse[A]): Option[A] =
+    inSameNode(srcKey, dstKey) { n => n.brpoplpush[A](srcKey, dstKey, timeoutInSeconds) }
+
+  override def blmovelr[A](srcKey: Any, dstKey: Any, timeoutInSeconds: Int)(implicit format: Format, parse: Parse[A]): Option[A] =
+    inSameNode(srcKey, dstKey) { n => n.brpoplpush[A](srcKey, dstKey, timeoutInSeconds) }
+
+  override def blmoverl[A](srcKey: Any, dstKey: Any, timeoutInSeconds: Int)(implicit format: Format, parse: Parse[A]): Option[A] =
+    inSameNode(srcKey, dstKey) { n => n.brpoplpush[A](srcKey, dstKey, timeoutInSeconds) }
+
+  override def blmoverr[A](srcKey: Any, dstKey: Any, timeoutInSeconds: Int)(implicit format: Format, parse: Parse[A]): Option[A] =
+    inSameNode(srcKey, dstKey) { n => n.brpoplpush[A](srcKey, dstKey, timeoutInSeconds) }
+
   override def rpoplpush[A](srcKey: Any, dstKey: Any)(implicit format: Format, parse: Parse[A]): Option[A] =
     inSameNode(srcKey, dstKey) { n => n.rpoplpush[A](srcKey, dstKey) }
 
